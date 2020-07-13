@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {Component} from 'react';
+import ReactDOM from 'react-dom';
 import './index.css';
 import {
 	DetailsList,
@@ -76,7 +77,34 @@ const Side: React.FunctionComponent = () => {
 
 class MainPage extends React.Component {
 
+  state = {
+    isLoading: true,
+    users: [],
+    error: null
+  };
+
+
+  fetchUsers() {
+    fetch(`https://jsonplaceholder.typicode.com/users`)
+      .then(response => response.json())
+      .then(data =>
+        this.setState({
+          users: data,
+          isLoading: false,
+        })
+      )
+      .catch(error => this.setState({ error, isLoading: false }));
+  }
+
+  componentDidMount() {
+    this.fetchUsers();
+  }
+
   render() {
+
+    const { isLoading, users, error } = this.state;
+
+
     const columns = [
       {
         key: "tickets",
@@ -127,25 +155,44 @@ class MainPage extends React.Component {
         className="dropdown"
       />
       <button style={{
-								marginTop: "10px",
+		marginTop: "10px",
                 marginLeft: "8px",
                 height:"30px",
                 width: "80px",
                 
-							}}>FIND</button>
+  }}>FIND</button>
     </Stack>
     </div>
-						<div className="tickets">
-							<DetailsList
-								items={columns}
-								columns={columns}
-								selectionMode={SelectionMode.none}
-							/>
-						</div>
+ <div className="tickets">  
+<DetailsList
+items={columns}
+columns={columns}
+selectionMode={SelectionMode.none}
+/>
+</div>
+            <React.Fragment>
+        <h1>API CALL</h1>
+        {!isLoading ? (
+          users.map(user => {
+            const { username, name, id } = user;
+            return (
+              <div key={username}>
+                <p>ID: {id}</p>
+                <p>Name: {name}</p>
+                <hr />
+              </div>
+            );
+          })
+        ) : (
+            <h3>Loading...</h3>
+          )}
+      </React.Fragment>
     </div>
     );
   }
 }
+
+
 
 const stackTokens: IStackTokens = {childrenGap : 20};
 const stackProps: IStackProps ={horizontal:true};
@@ -156,7 +203,6 @@ function App() {
     <Nav
     onLinkClick={_onLinkClick}
     selectedKey="key3"
-    ariaLabel="Nav basic example"
     styles={navStyles}
     groups={navLinkGroups}
   />
